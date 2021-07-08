@@ -81,7 +81,7 @@ public class LocationParserTest {
   }
 
   @Test
-  public void parseByCountryAndAcountryCodeTest() {
+  public void parseByCountryAndCountryCodeTest() {
 
     // State
     ExtendedRecord extendedRecord =

@@ -45,6 +45,14 @@ public class CoordinateParseUtils {
   private static final Pattern DMS_COORD =
       Pattern.compile(
           "^" + DMS + "([NSEOW])" + "[ ,;/]?" + DMS + "([NSEOW])$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern POINT_FOOTPRINT =
+      Pattern.compile(
+          "^\\s*POINT\\s*\\("
+              + "\\s*(-?\\d{1,3}(?:[.]\\d+)?)"
+              + "\\s*[ ,;/]\\s*"
+              + "\\s*(-?\\d{1,3}(?:[.]\\d+)?)"
+              + "\\s*\\)\\s*$",
+          Pattern.CASE_INSENSITIVE);
   private static final String POSITIVE = "NEO";
 
   /**
@@ -143,6 +151,29 @@ public class CoordinateParseUtils {
     }
 
     return ParsedField.fail(COORDINATE_INVALID.name());
+  }
+
+  /**
+   * Parse a POINT(long lat) value from the footprintWKT, but fail silently if one is not found —
+   * this field can contain lines, polygons and coordinates in different projections.
+   */
+  // POINT(30.29 -23.2)
+  public static ParsedField<LatLng> parsePointFootprintWKT(final String footprint) {
+    if (Strings.isNullOrEmpty(footprint)) {
+      return ParsedField.fail();
+    }
+    Matcher m = POINT_FOOTPRINT.matcher(footprint);
+    if (m.find()) {
+      // assume WKT order (longitude, latitude)
+      Double lng = NumberParser.parseDouble(m.group(1));
+      Double lat = NumberParser.parseDouble(m.group(2));
+      ParsedField<LatLng> result = validateAndRound(lat, lng);
+      if (result.isSuccessful()) {
+        return result;
+      }
+    }
+
+    return ParsedField.fail();
   }
 
   private static ParsedField<LatLng> validateAndRound(double lat, double lon) {

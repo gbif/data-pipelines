@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.gbif.api.vocabulary.Country;
 import org.gbif.common.parsers.core.ParseResult;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.Term;
 import org.gbif.kvs.KeyValueStore;
 import org.gbif.kvs.geocode.LatLng;
 import org.gbif.pipelines.core.parsers.VocabularyParser;
@@ -131,10 +132,19 @@ public class LocationParser {
 
   private static ParsedField<LatLng> parseLatLng(ExtendedRecord er) {
     ParsedField<LatLng> parsedLatLon = CoordinatesParser.parseCoords(er);
+    Term datum = DwcTerm.geodeticDatum;
 
     if (!parsedLatLon.isSuccessful()) {
-      // coords parsing failed
-      return parsedLatLon;
+      // coords parsing failed, try the footprintWKT
+      ParsedField<LatLng> parsedFootprint = CoordinatesParser.parseFootprint(er);
+      if (parsedFootprint.isSuccessful()) {
+        parsedLatLon = parsedFootprint;
+        datum = DwcTerm.footprintSRS;
+
+      } else {
+        // use the issues from the coordinate parsing (not the footprint)
+        return parsedLatLon;
+      }
     }
 
     // interpret geodetic datum and reproject if needed
@@ -143,7 +153,7 @@ public class LocationParser {
         Wgs84Projection.reproject(
             parsedLatLon.getResult().getLatitude(),
             parsedLatLon.getResult().getLongitude(),
-            extractValue(er, DwcTerm.geodeticDatum));
+            extractValue(er, datum));
 
     // collect issues
     Set<String> issues = parsedLatLon.getIssues();

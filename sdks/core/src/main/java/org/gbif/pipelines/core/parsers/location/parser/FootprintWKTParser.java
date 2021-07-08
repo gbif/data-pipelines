@@ -7,6 +7,7 @@ import org.gbif.api.vocabulary.OccurrenceIssue;
 import org.gbif.pipelines.core.parsers.common.ParsedField;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -35,7 +36,13 @@ public class FootprintWKTParser {
   public static ParsedField<String> parseFootprintWKT(
       CoordinateReferenceSystem footprintSRS, String footprintWKT) {
     try {
-      MathTransform transform = CRS.findMathTransform(footprintSRS, WGS84, true);
+      MathTransform transform;
+      if (footprintSRS == null) {
+        transform = IdentityTransform.create(WGS84.getCoordinateSystem().getDimension());
+      } else {
+        transform = CRS.findMathTransform(footprintSRS, WGS84, true);
+      }
+
       WKTReader wktReader = new WKTReader();
       Geometry geometry = wktReader.read(footprintWKT);
       return ParsedField.<String>builder()
