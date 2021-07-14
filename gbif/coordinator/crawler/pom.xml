@@ -89,7 +89,7 @@
 
     <guice.version>4.2.3</guice.version>
     <!-- Match the GBIF http-client! -->
-    <httpclient.version>4.5.6</httpclient.version>
+    <httpclient.version>4.5.13</httpclient.version>
     <!-- Match the GBIF http-client! -->
     <httpcore.version>4.4.10</httpcore.version>
     <jcommander.version>1.58</jcommander.version>
