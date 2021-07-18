@@ -184,7 +184,9 @@ public class ALAUUIDMintingPipeline {
                             options.getTargetPath(),
                             options.getDatasetId().trim(),
                             options.getAttempt().toString(),
-                            "verbatim.avro")))
+                            "interpreted",
+                            "verbatim",
+                            "*.avro")))
             .apply(
                 ParDo.of(
                     new DoFn<ExtendedRecord, KV<String, String>>() {
